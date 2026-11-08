@@ -226,12 +226,15 @@ Return your output strictly as a JSON object matching this structure:
 }`;
 
   const response = await callGeminiWithRetry(ai, {
-    model: 'gemini-3.8-flash',
+    model: 'gemini-3.5-flash-lite',
     contents: prompt,
     config: {
-      systemInstruction: systemDirective,
-      responseMimeType: 'application/json',
-    },
+  systemInstruction: systemDirective,
+  responseMimeType: 'application/json',
+  thinkingConfig: {
+    thinkingLevel: 'low',
+  },
+},
   });
 
   const rawText = response.text || '{}';
@@ -321,13 +324,16 @@ Return your evaluation strictly as JSON:
 }`;
 
   const response = await callGeminiWithRetry(ai, {
-    model: 'gemini-3.8-flash',
-    contents: prompt,
-    config: {
-      systemInstruction,
-      responseMimeType: 'application/json',
+  model: 'gemini-3.5-flash-lite',
+  contents: prompt,
+  config: {
+    systemInstruction,
+    responseMimeType: 'application/json',
+    thinkingConfig: {
+      thinkingLevel: 'low',
     },
-  });
+  },
+});
 
   const rawText = response.text || '{}';
   let report: {
@@ -410,7 +416,7 @@ Return strictly as JSON:
 
   try {
     const res = await callGeminiWithRetry(ai, {
-      model: 'gemini-3.8-flash',
+      model: 'gemini-3.5-flash-lite',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
@@ -525,7 +531,7 @@ export async function runPipeline(
 
   // 4. MEMORY SYNTHESIS
   const newRules: LearnedMemoryRule[] = [];
-  if (rejectionLogs.length > 0) {
+  if (rejectionLogs.length > 0 && finalVerdict === 'TERMINAL_FAIL') {
     const synthesized = await synthesizeMemoryRule(ai, topic, rejectionLogs);
     if (synthesized) {
       newRules.push(synthesized);
